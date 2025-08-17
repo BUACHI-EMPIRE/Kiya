@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Management System - Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Sales Management System - Test</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-2">PIN Test</h3>
+                <button onclick="testPinChange()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Test PIN Change
+                </button>
+                <p class="text-sm text-gray-600 mt-2">Current PIN: <span id="currentPinDisplay">1234</span></p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-2">Product Test</h3>
+                <button onclick="testAddProduct()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Add Test Product
+                </button>
+                <p class="text-sm text-gray-600 mt-2">Products: <span id="productCount">0</span></p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-2">Sales Manager Test</h3>
+                <button onclick="testAddSalesManager()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    Add Test Sales Manager
+                </button>
+                <p class="text-sm text-gray-600 mt-2">Sales Managers: <span id="salesManagerCount">0</span></p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-2">Sale Test</h3>
+                <button onclick="testAddSale()" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
+                    Add Test Sale
+                </button>
+                <p class="text-sm text-gray-600 mt-2">Sales: <span id="saleCount">0</span></p>
+            </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold mb-4">Console Output</h3>
+            <div id="consoleOutput" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-64 overflow-y-auto">
+                <div>System initialized. Ready for testing...</div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <button onclick="clearAllData()" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600">
+                Clear All Data (PIN Protected)
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Mobile responsive adjustments for test interface
+        function adjustForMobile() {
+            if (window.innerWidth <= 768) {
+                const container = document.querySelector('.container');
+                if (container) {
+                    container.className = 'container mx-auto px-2 py-4';
+                }
+                
+                const grid = document.querySelector('.grid');
+                if (grid) {
+                    grid.className = 'grid grid-cols-1 gap-4 mb-6';
+                }
+            }
+        }
+        
+        // Call on load and resize
+        window.addEventListener('resize', adjustForMobile);
+        document.addEventListener('DOMContentLoaded', adjustForMobile);
+        // Test functions
+        function log(message) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateCounts() {
+            document.getElementById('productCount').textContent = products.length;
+            document.getElementById('salesManagerCount').textContent = salesManagers.length;
+            document.getElementById('saleCount').textContent = sales.length;
+            document.getElementById('currentPinDisplay').textContent = currentPin;
+        }
+        
+        function testPinChange() {
+            log('Testing PIN change functionality...');
+            const newPin = prompt('Enter new PIN (at least 4 digits):');
+            if (newPin && newPin.length >= 4) {
+                const oldPin = currentPin;
+                currentPin = newPin;
+                localStorage.setItem('salesManager_pin', currentPin);
+                log(`PIN changed from ${oldPin} to ${newPin}`);
+                updateCounts();
+            } else {
+                log('Invalid PIN entered');
+            }
+        }
+        
+        function testAddProduct() {
+            log('Adding test product...');
+            const product = {
+                id: Date.now(),
+                name: 'Test Product ' + (products.length + 1),
+                category: 'Test Category',
+                price: Math.random() * 100 + 10,
+                stock: Math.floor(Math.random() * 50) + 10
+            };
+            products.push(product);
+            saveData();
+            updateCounts();
+            log(`Product added: ${product.name} - GH₵${product.price.toFixed(2)}`);
+        }
+        
+        function testAddSalesManager() {
+            log('Adding test sales manager...');
+            const salesManager = {
+                id: Date.now(),
+                name: 'Test Sales Manager ' + (salesManagers.length + 1),
+                email: `salesmanager${salesManagers.length + 1}@test.com`,
+                phone: '+233' + Math.floor(Math.random() * 100000000),
+                address: 'Test Address ' + (salesManagers.length + 1)
+            };
+            salesManagers.push(salesManager);
+            saveData();
+            updateCounts();
+            log(`Sales Manager added: ${salesManager.name}`);
+        }
+        
+        function testAddSale() {
+            if (products.length === 0 || salesManagers.length === 0) {
+                log('Error: Need at least one product and sales manager to create a sale');
+                return;
+            }
+            
+            log('Adding test sale...');
+            const product = products[Math.floor(Math.random() * products.length)];
+            const salesManager = salesManagers[Math.floor(Math.random() * salesManagers.length)];
+            const quantity = Math.floor(Math.random() * 5) + 1;
+            
+            if (product.stock < quantity) {
+                log(`Error: Insufficient stock. Product ${product.name} has only ${product.stock} in stock`);
+                return;
+            }
+            
+            const sale = {
+                id: Date.now(),
+                productId: product.id,
+                salesManagerId: salesManager.id,
+                customerName: 'Test Customer ' + Math.floor(Math.random() * 100),
+                quantity: quantity,
+                date: new Date().toISOString().split('T')[0],
+                total: product.price * quantity
+            };
+            
+            product.stock -= quantity;
+            sales.push(sale);
+            saveData();
+            updateCounts();
+            log(`Sale added: ${quantity}x ${product.name} by ${salesManager.name} - Total: GH₵${sale.total.toFixed(2)}`);
+        }
+        
+        // Override showNotification to also log to our console
+        const originalShowNotification = showNotification;
+        showNotification = function(message, type) {
+            log(`Notification: ${message} (${type})`);
+            originalShowNotification(message, type);
+        };
+        
+        // Initialize test interface
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                updateCounts();
+                log('Test interface ready. You can now test all functionality.');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
